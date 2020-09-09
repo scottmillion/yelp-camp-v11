@@ -7,7 +7,7 @@ const middlewareObj = {};
 middlewareObj.checkCampgroundOwnership = (req, res, next) => {
   if (req.isAuthenticated()) {
     Campground.findById(req.params.id, (err, foundCampground) => {
-      if (err) {
+      if (err || !foundCampground) {
         req.flash("error", "Campground not found.");
         res.redirect("back");
       } else {
@@ -30,9 +30,17 @@ middlewareObj.checkCampgroundOwnership = (req, res, next) => {
 middlewareObj.checkCommentOwnership = (req, res, next) => {
   if (req.isAuthenticated()) {
     Comment.findById(req.params.comment_id, (err, foundComment) => {
-      if (err) {
+      if (err || !foundComment) {
+        req.flash("error", "Comment not found.");
         res.redirect("back");
       } else {
+        // Added this block, to check if foundCampground exists, and if it doesn't to throw an error via connect-flash and send us back to the homepage. This is to fix crashing error discussed here: https://www.udemy.com/course/the-web-developer-bootcamp/learn/lecture/3861710#questions/2758358
+        if (!foundComment) {
+          req.flash("error", "Item not found.");
+          return res.redirect("back");
+        }
+        // If the upper condition is true this will break out of the middleware and prevent the code below to crash our application
+        //=================
         if (foundComment.author.id.equals(req.user._id)) {
           next();
         } else {
