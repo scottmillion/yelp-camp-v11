@@ -4,6 +4,7 @@ const
   app = express(),
   bodyParser = require('body-parser'),
   mongoose = require('mongoose'),
+  flash = require('connect-flash'),
   passport = require('passport'),
   LocalStrategy = require('passport-local'),
   methodOverride = require('method-override'),
@@ -19,7 +20,8 @@ const
   indexRoutes = require('./routes/index');
 
 // DELETE DATABASE AND LOAD SEED DATA
-seedDB();
+// seedDB();
+app.use(flash());
 
 // APP CONFIG
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -43,6 +45,8 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
   // whatever you put in res.locals is available on every view template.
   res.locals.currentUser = req.user;
+  res.locals.error = req.flash("error");
+  res.locals.success = req.flash("success");
   next();
 });
 
